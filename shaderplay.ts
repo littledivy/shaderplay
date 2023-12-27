@@ -32,6 +32,20 @@ console.log("Display: ", displayHandle);
 const context = createWindowSurface(system, windowHandle, displayHandle);
 
 let pipeline;
+
+const fragPrelude = `
+struct Uniforms {
+    mouse: vec2f,
+    clicked: f32,
+    frame: f32,
+};
+
+@group(0) @binding(0) var<uniform> shaderplay: Uniforms;
+`;
+const uniformLength = 5;
+
+let uniformValues, uniformBindGroup, uniformBuffer;
+
 function createPipeline() {
   let shader = Deno.readTextFileSync(shaderFile);
   let fragEntry = "fs_main";
@@ -58,13 +72,31 @@ ${shader}
     fragEntry = "main";
   }
 
+  shader = `${fragPrelude}\n${shader}`;
+
   const shaderModule = device.createShaderModule({
     code: shader,
     label: shaderFile,
   });
 
+  const bindGroupLayout = device.createBindGroupLayout({
+    entries: [
+      {
+        binding: 0,
+        visibility: GPUShaderStage.FRAGMENT | GPUShaderStage.VERTEX,
+        buffer: {
+          type: "uniform",
+        },
+      },
+    ],
+  });
   pipeline = device.createRenderPipeline({
-    layout: device.createPipelineLayout({ bindGroupLayouts: [] }),
+    // "auto" layout not working in Deno but works in browser
+    layout: device.createPipelineLayout({
+      bindGroupLayouts: [
+        bindGroupLayout,
+      ],
+    }),
     vertex: {
       module: shaderModule,
       entryPoint: "vs_main",
@@ -81,6 +113,22 @@ ${shader}
     },
   });
 
+  const value = new Float32Array(uniformLength);
+  uniformBuffer = device.createBuffer({
+    size: value.byteLength,
+    usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+  });
+  uniformValues = value;
+
+  device.queue.writeBuffer(uniformBuffer, 0, value);
+
+  uniformBindGroup = device.createBindGroup({
+    layout: bindGroupLayout,
+    entries: [
+      { binding: 0, resource: { buffer: uniformBuffer } },
+    ],
+  });
+
   window.raise();
 }
 
@@ -95,28 +143,47 @@ context.configure({
 
 function run() {
   const event = window.events().next().value;
-  if (event.type === EventType.Quit) Deno.exit(0);
-  if (event.type == EventType.Draw) {
-    const commandEncoder = device.createCommandEncoder();
-    const textureView = context.getCurrentTexture().createView();
+  uniformValues[3]++; // frame++
+  switch (event.type) {
+    case EventType.MouseMotion:
+      uniformValues[0] = event.x / width;
+      uniformValues[1] = event.y / height;
+      break;
+    case EventType.MouseButtonDown:
+      uniformValues[2] = 1;
+      break;
+    case EventType.MouseButtonUp:
+      uniformValues[2] = 0;
+      break;
+    case EventType.Draw:
+      const commandEncoder = device.createCommandEncoder();
+      const textureView = context.getCurrentTexture().createView();
 
-    const renderPass = commandEncoder.beginRenderPass({
-      colorAttachments: [
-        {
-          view: textureView,
-          clearValue: { r: 0, g: 0, b: 0, a: 1 },
-          loadOp: "clear",
-          storeOp: "store",
-        },
-      ],
-    });
+      const renderPass = commandEncoder.beginRenderPass({
+        colorAttachments: [
+          {
+            view: textureView,
+            clearValue: { r: 0, g: 0, b: 0, a: 1 },
+            loadOp: "clear",
+            storeOp: "store",
+          },
+        ],
+      });
 
-    renderPass.setPipeline(pipeline);
-    renderPass.draw(3, 1);
-    renderPass.end();
+      device.queue.writeBuffer(uniformBuffer, 0, uniformValues);
 
-    device.queue.submit([commandEncoder.finish()]);
-    context.present();
+      renderPass.setPipeline(pipeline);
+      renderPass.setBindGroup(0, uniformBindGroup);
+      renderPass.draw(3, 1);
+      renderPass.end();
+
+      device.queue.submit([commandEncoder.finish()]);
+      context.present();
+      break;
+    case EventType.Quit:
+      Deno.exit(0);
+    default:
+      break;
   }
 }
 
