@@ -1,5 +1,5 @@
 import { EventType, WindowBuilder } from "jsr:@divy/sdl2@0.10.5";
-import loadGlslang from "npm:@webgpu/glslang";
+import loadGlslang from "npm:@webgpu/glslang@0.0.15";
 import "./vendor/cdn.babylonjs.com/twgsl/twgsl.js";
 
 const twgsl = await (globalThis as any).twgsl(
@@ -185,7 +185,7 @@ async function run() {
     }
   }
 }
-async function run2() {
+async function watcher() {
   const wacher = Deno.watchFs(shaderFile);
   for await (const _ of wacher) {
     console.log("Shader changed, reloading...");
@@ -193,5 +193,7 @@ async function run2() {
   }
 }
 
-run();
-run2();
+if (import.meta.main) {
+  run();
+  watcher();
+}

@@ -10,5 +10,10 @@ This is written on top of the
 To run:
 
 ```
-deno run -A --unstable-ffi --unstable-webgpu ./shaderplay.ts examples/waves.wgsl
+$ deno run 
+     -A
+     --unstable-ffi 
+     --unstable-webgpu 
+     jsr:@divy/shaderplay 
+     examples/waves.wgsl
 ```

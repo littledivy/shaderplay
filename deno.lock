@@ -3,7 +3,8 @@
   "packages": {
     "specifiers": {
       "jsr:@divy/sdl2@0.10.5": "jsr:@divy/sdl2@0.10.5",
-      "npm:@webgpu/glslang": "npm:@webgpu/glslang@0.0.15"
+      "npm:@webgpu/glslang": "npm:@webgpu/glslang@0.0.15",
+      "npm:@webgpu/glslang@0.0.15": "npm:@webgpu/glslang@0.0.15"
     },
     "jsr": {
       "@divy/sdl2@0.10.5": {
