@@ -1,11 +1,8 @@
-import {
-  EventType,
-  WindowBuilder,
-} from "https://deno.land/x/sdl2@0.7.0/mod.ts";
+import { EventType, WindowBuilder } from "jsr:@divy/sdl2@0.10.5";
 import glslang from "https://deno.land/x/glslang@1.0.1/mod.ts";
 import "https://cdn.babylonjs.com/twgsl/twgsl.js";
 
-const twgsl = await globalThis.twgsl(
+const twgsl = await (globalThis as any).twgsl(
   "https://cdn.babylonjs.com/twgsl/twgsl.wasm",
 );
 
@@ -23,15 +20,12 @@ const device = await adapter!.requestDevice();
 
 const window = new WindowBuilder(shaderFile, width, height).alwaysOnTop()
   .build();
-const [system, windowHandle, displayHandle] = window.rawHandle();
 
-console.log("System: ", system);
-console.log("Window: ", windowHandle);
-console.log("Display: ", displayHandle);
+const surface = window.windowSurface();
+const context = surface.getContext("webgpu");
+console.log({ surface, context });
 
-const context = createWindowSurface(system, windowHandle, displayHandle);
-
-let pipeline;
+let pipeline: any;
 
 const fragPrelude = `
 struct Uniforms {
@@ -44,13 +38,13 @@ struct Uniforms {
 `;
 const uniformLength = 5;
 
-let uniformValues, uniformBindGroup, uniformBuffer;
+let uniformValues: any, uniformBindGroup: any, uniformBuffer: any;
 
 function createPipeline() {
   let shader = Deno.readTextFileSync(shaderFile);
   let fragEntry = "fs_main";
   if (shaderFile.endsWith(".glsl")) {
-    const spirv = glslang.compileGLSL(shader, "fragment");
+    const spirv = glslang.compileGLSL(shader, "fragment", false);
     shader = twgsl.convertSpirV2WGSL(spirv);
 
     shader = `
@@ -141,56 +135,61 @@ context.configure({
   height,
 });
 
-function run() {
-  const event = window.events().next().value;
-  uniformValues[3]++; // frame++
-  switch (event.type) {
-    case EventType.MouseMotion:
-      uniformValues[0] = event.x / width;
-      uniformValues[1] = event.y / height;
-      break;
-    case EventType.MouseButtonDown:
-      uniformValues[2] = 1;
-      break;
-    case EventType.MouseButtonUp:
-      uniformValues[2] = 0;
-      break;
-    case EventType.Draw:
-      const commandEncoder = device.createCommandEncoder();
-      const textureView = context.getCurrentTexture().createView();
+async function run() {
+  for await (const event of window.events()) {
+    uniformValues[3]++; // frame++
+    switch (event.type) {
+      case EventType.MouseMotion:
+        uniformValues[0] = event.x / width;
+        uniformValues[1] = event.y / height;
+        break;
+      case EventType.MouseButtonDown:
+        uniformValues[2] = 1;
+        break;
+      case EventType.MouseButtonUp:
+        uniformValues[2] = 0;
+        break;
+      case EventType.Draw: {
+        const commandEncoder = device.createCommandEncoder();
+        const textureView = context.getCurrentTexture().createView();
 
-      const renderPass = commandEncoder.beginRenderPass({
-        colorAttachments: [
-          {
-            view: textureView,
-            clearValue: { r: 0, g: 0, b: 0, a: 1 },
-            loadOp: "clear",
-            storeOp: "store",
-          },
-        ],
-      });
+        const renderPass = commandEncoder.beginRenderPass({
+          colorAttachments: [
+            {
+              view: textureView,
+              clearValue: { r: 0, g: 0, b: 0, a: 1 },
+              loadOp: "clear",
+              storeOp: "store",
+            },
+          ],
+        });
 
-      device.queue.writeBuffer(uniformBuffer, 0, uniformValues);
+        device.queue.writeBuffer(uniformBuffer, 0, uniformValues);
 
-      renderPass.setPipeline(pipeline);
-      renderPass.setBindGroup(0, uniformBindGroup);
-      renderPass.draw(3, 1);
-      renderPass.end();
+        renderPass.setPipeline(pipeline);
+        renderPass.setBindGroup(0, uniformBindGroup);
+        renderPass.draw(3, 1);
+        renderPass.end();
 
-      device.queue.submit([commandEncoder.finish()]);
-      context.present();
-      break;
-    case EventType.Quit:
-      Deno.exit(0);
-    default:
-      break;
+        device.queue.submit([commandEncoder.finish()]);
+        surface.present();
+        break;
+      }
+      case EventType.Quit:
+        Deno.exit(0);
+        break;
+      default:
+        break;
+    }
+  }
+}
+async function run2() {
+  const wacher = Deno.watchFs(shaderFile);
+  for await (const _ of wacher) {
+    console.log("Shader changed, reloading...");
+    createPipeline();
   }
 }
 
-setInterval(run, 0);
-
-const wacher = Deno.watchFs(shaderFile);
-for await (const event of wacher) {
-  console.log("Shader changed, reloading...");
-  createPipeline();
-}
+run();
+run2();
