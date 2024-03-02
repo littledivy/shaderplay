@@ -1,0 +1,5 @@
+{
+  "name": "@divy/shaderplay",
+  "version": "0.0.1",
+  "exports": "./shaderplay.ts"
+}

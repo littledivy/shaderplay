@@ -1,6 +1,6 @@
 import { EventType, WindowBuilder } from "jsr:@divy/sdl2@0.10.5";
-import glslang from "https://deno.land/x/glslang@1.0.1/mod.ts";
-import "https://cdn.babylonjs.com/twgsl/twgsl.js";
+import loadGlslang from "npm:@webgpu/glslang";
+import "./vendor/cdn.babylonjs.com/twgsl/twgsl.js";
 
 const twgsl = await (globalThis as any).twgsl(
   "https://cdn.babylonjs.com/twgsl/twgsl.wasm",
@@ -40,10 +40,12 @@ const uniformLength = 5;
 
 let uniformValues: any, uniformBindGroup: any, uniformBuffer: any;
 
-function createPipeline() {
+async function createPipeline() {
   let shader = Deno.readTextFileSync(shaderFile);
   let fragEntry = "fs_main";
   if (shaderFile.endsWith(".glsl")) {
+    // @ts-ignore: loadGlslang is callable default export
+    const glslang = await loadGlslang();
     const spirv = glslang.compileGLSL(shader, "fragment", false);
     shader = twgsl.convertSpirV2WGSL(spirv);
 
@@ -126,7 +128,7 @@ ${shader}
   window.raise();
 }
 
-createPipeline();
+await createPipeline();
 
 context.configure({
   device,
