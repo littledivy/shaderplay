@@ -3,6 +3,7 @@
   "specifiers": {
     "jsr:@divy/sdl2@0.10.5": "0.10.5",
     "jsr:@divy/sdl2@0.12.1": "0.12.1",
+    "jsr:@divy/sdl2@0.13.0": "0.13.0",
     "npm:@webgpu/glslang@*": "0.0.15",
     "npm:@webgpu/glslang@0.0.15": "0.0.15"
   },
@@ -12,6 +13,9 @@
     },
     "@divy/sdl2@0.12.1": {
       "integrity": "dbe09b7b75ef9018c26af30113812ec43de2c042740e072f0a42fb75389d9da1"
+    },
+    "@divy/sdl2@0.13.0": {
+      "integrity": "451562a6eea59ddf4dc7bec973974343b706c6c2b4f71007a0e00c78c748ce7e"
     }
   },
   "npm": {
