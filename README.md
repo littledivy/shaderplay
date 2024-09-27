@@ -11,7 +11,6 @@ To run:
 ```
 $ deno run 
      -A
-     --unstable-ffi 
      --unstable-webgpu 
      jsr:@divy/shaderplay 
      examples/waves.wgsl
