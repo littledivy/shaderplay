@@ -1,21 +1,22 @@
 {
-  "version": "3",
-  "packages": {
-    "specifiers": {
-      "jsr:@divy/sdl2@0.10.5": "jsr:@divy/sdl2@0.10.5",
-      "npm:@webgpu/glslang": "npm:@webgpu/glslang@0.0.15",
-      "npm:@webgpu/glslang@0.0.15": "npm:@webgpu/glslang@0.0.15"
+  "version": "4",
+  "specifiers": {
+    "jsr:@divy/sdl2@0.10.5": "0.10.5",
+    "jsr:@divy/sdl2@0.12.1": "0.12.1",
+    "npm:@webgpu/glslang@*": "0.0.15",
+    "npm:@webgpu/glslang@0.0.15": "0.0.15"
+  },
+  "jsr": {
+    "@divy/sdl2@0.10.5": {
+      "integrity": "399d8ff45507d071301c9dde7740dbe35846cb5e9f6cd26ab53b251bb0039cd8"
     },
-    "jsr": {
-      "@divy/sdl2@0.10.5": {
-        "integrity": "399d8ff45507d071301c9dde7740dbe35846cb5e9f6cd26ab53b251bb0039cd8"
-      }
-    },
-    "npm": {
-      "@webgpu/glslang@0.0.15": {
-        "integrity": "sha512-niT+Prh3Aff8Uf1MVBVUsaNjFj9rJAKDXuoHIKiQbB+6IUP/3J3JIhBNyZ7lDhytvXxw6ppgnwKZdDJ08UMj4Q==",
-        "dependencies": {}
-      }
+    "@divy/sdl2@0.12.1": {
+      "integrity": "dbe09b7b75ef9018c26af30113812ec43de2c042740e072f0a42fb75389d9da1"
+    }
+  },
+  "npm": {
+    "@webgpu/glslang@0.0.15": {
+      "integrity": "sha512-niT+Prh3Aff8Uf1MVBVUsaNjFj9rJAKDXuoHIKiQbB+6IUP/3J3JIhBNyZ7lDhytvXxw6ppgnwKZdDJ08UMj4Q=="
     }
   },
   "remote": {

@@ -1,4 +1,4 @@
-import { EventType, WindowBuilder } from "jsr:@divy/sdl2@0.10.5";
+import { EventType, WindowBuilder } from "jsr:@divy/sdl2@0.13.0";
 import loadGlslang from "npm:@webgpu/glslang@0.0.15";
 import "./vendor/cdn.babylonjs.com/twgsl/twgsl.js";
 
@@ -21,9 +21,8 @@ const device = await adapter!.requestDevice();
 const window = new WindowBuilder(shaderFile, width, height).alwaysOnTop()
   .build();
 
-const surface = window.windowSurface();
+const surface = window.windowSurface(width, height);
 const context = surface.getContext("webgpu");
-console.log({ surface, context });
 
 let pipeline: any;
 
@@ -133,8 +132,6 @@ await createPipeline();
 context.configure({
   device,
   format: "bgra8unorm",
-  width,
-  height,
 });
 
 async function run() {
