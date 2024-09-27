@@ -1,5 +1,6 @@
 {
   "name": "@divy/shaderplay",
   "version": "0.0.3",
+  "license": "MIT",
   "exports": "./shaderplay.ts"
 }
