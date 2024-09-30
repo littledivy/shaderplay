@@ -1,5 +1,5 @@
 import { EventType, WindowBuilder } from "jsr:@divy/sdl2@0.13.0";
-import loadGlslang from "npm:@webgpu/glslang@0.0.15";
+import loadGlslang from "npm:@webgpu/glslang@0.0.15/dist/web-devel/glslang.js";
 import "./vendor/cdn.babylonjs.com/twgsl/twgsl.js";
 
 const twgsl = await (globalThis as any).twgsl(
